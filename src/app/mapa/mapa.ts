@@ -14,6 +14,7 @@ import { BASE_MAPAS_CONFIG } from '../config/tipos_mapa';
 // Servicios
 import { MapaService } from '../servicios/mapa.service';
 import { catchError, of, tap } from 'rxjs';
+import { GeometriaService } from '../servicios/geometria.service';
 
 @Component({
   selector: 'app-mapa',
@@ -22,6 +23,7 @@ import { catchError, of, tap } from 'rxjs';
 })
 export class Mapa implements AfterViewInit {
   private readonly servicioMapa = inject(MapaService);
+  private readonly servicioGeometria = inject(GeometriaService);
 
   // Declaramos la instancia del mapa
   private mapa!: L.Map;
@@ -122,13 +124,31 @@ export class Mapa implements AfterViewInit {
     });
   }
 
+  // Para gestionar las capas
+  private gestionarCapa(
+    id: String,
+    datos: any[],
+    opcionesPunto?: any,
+    opcionesPoligono?: any,
+  ): void {
+    const { capa, limites } = this.servicioGeometria.dibujarGeometria(
+      datos,
+      opcionesPunto,
+      opcionesPoligono,
+    );
+
+    capa.addTo(this.mapa);
+  }
+
   // Prueba
   mostrarDepartamentos() {
     this.servicioMapa
       .listarDepartamentos()
       .pipe(
         tap((resp: any) => {
-          console.log(resp);
+          // console.log(resp);
+
+          this.gestionarCapa('departamentos', resp, null, { grosor: 1 });
         }),
         catchError((err) => {
           console.log(err);
