@@ -51,7 +51,8 @@ export class Mapa implements AfterViewInit {
 
   ngAfterViewInit() {
     this.iniciarMapa();
-    this.mostrarDepartamentos();
+    // this.mostrarDepartamentos();
+    this.mostrarMunicipios(2);
   }
 
   // Iniciar Mapa
@@ -149,6 +150,23 @@ export class Mapa implements AfterViewInit {
           // console.log(resp);
 
           this.gestionarCapa('departamentos', resp, null, { grosor: 1 });
+        }),
+        catchError((err) => {
+          console.log(err);
+          return of([]);
+        }),
+      )
+      .subscribe();
+  }
+
+  mostrarMunicipios(cod_depto: number) {
+    this.servicioMapa
+      .listarMunicipios(cod_depto)
+      .pipe(
+        tap((resp: any) => {
+          // console.log(resp);
+
+          this.gestionarCapa('municipios', resp, null, { grosor: 1 });
         }),
         catchError((err) => {
           console.log(err);

@@ -54,7 +54,7 @@ export class GeometriaService {
         const color = opcionesPoligono?.color ?? elemento['color'] ?? '#3b8246';
 
         layer = L.polygon(multipoligono, {
-          color: color,
+          color: '#ffffff',
           fillColor: opcionesPoligono?.colorRelleno ?? color,
           weight: opcionesPoligono?.grosor,
           opacity: opcionesPoligono?.opacidad,
@@ -64,7 +64,74 @@ export class GeometriaService {
         // Agregar todoslo vertices al calculo del limite del mapa
         multipoligono.flat().forEach((v: any) => limites.extend(v));
       }
+
+      if (layer) {
+        // Para contruir el popup
+        layer.bindPopup(this.construirPopup(elemento), {
+          maxWidth: 400,
+        });
+
+        // Hover para mostrar el popup
+        layer.on('mouseover', (evento) => {
+          // Se obtiene la capa donde va a ocurrir el evento
+          const objeto = evento.target;
+
+          objeto.openPopup();
+
+          if (typeof objeto.setStyle === 'function') {
+            objeto.setStyle({
+              weight: 4,
+            });
+          }
+        });
+
+        layer.on('mouseout', (evento) => {
+          const objeto = evento.target;
+
+          // Si el popup esta abierto no se ejecuta el cierre
+          // if (objeto.isPopupOpen()) return;
+
+          // Si el popup me esta abierto se cierra
+          objeto.closePopup();
+
+          if (typeof objeto.setStyle === 'function') {
+            objeto.setStyle({
+              weight: opcionesPoligono?.grosor ?? 2,
+            });
+          }
+        });
+
+        capa.addLayer(layer);
+      }
     });
     return { capa, limites: limites };
+  }
+
+  private construirPopup(elemento: ElementoGeometria) {
+    // Excluir campos
+    const camposExcluidos = new Set(['geom', 'color']);
+
+    const filas = Object.entries(elemento)
+      .filter(([clave]) => !camposExcluidos.has(clave))
+      .map(([clave, valor]) => {
+        // Transformar nombre de campo para el usuario
+        const etiqueta = clave.replace(/_/g, ' ').replace(/\b\w/g, (letra) => letra.toUpperCase());
+
+        return `
+                        <tr>
+                          <td><strong>${etiqueta} :</strong></td>
+                          <td>${valor ?? '-'}</td>
+                        </tr>
+                      `;
+      })
+      .join('');
+
+    return `
+        <table>
+          <tbody>
+            ${filas}
+          </tbody>
+        </table>
+      `;
   }
 }

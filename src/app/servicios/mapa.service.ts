@@ -14,4 +14,9 @@ export class MapaService {
   listarDepartamentos() {
     return this.http.get<any>(`${this.urlBase}/mapa/listar`);
   }
+
+  // Listar Municipios de un departamento
+  listarMunicipios(cod_depto: number) {
+    return this.http.post(`${this.urlBase}/mapa/listar-municipios`, { cod_depto });
+  }
 }
