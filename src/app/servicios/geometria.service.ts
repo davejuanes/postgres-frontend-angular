@@ -12,7 +12,14 @@ interface ElementoGeometria {
   providedIn: 'root',
 })
 export class GeometriaService {
-  dibujarGeometria(datos: ElementoGeometria[], opcionesPunto?: any, opcionesPoligono?: any) {
+  dibujarGeometria(
+    datos: ElementoGeometria[],
+    opcionesPunto?: any,
+    opcionesPoligono?: any,
+
+    alHacerClick?: (elemento: ElementoGeometria) => void,
+    campoNombre?: string,
+  ) {
     // Contendra las geometrias dibujadas
     const capa = L.layerGroup();
     // Limites geograficos de todas las geometrias
@@ -101,7 +108,24 @@ export class GeometriaService {
           }
         });
 
+        // Verificar sit iene la funcionalidad de hacer click
+        if (alHacerClick) {
+          layer.on('click', (evento) => {
+            L.DomEvent.stopPropagation(evento);
+            alHacerClick(elemento);
+          });
+        }
+
         capa.addLayer(layer);
+
+        if (campoNombre && elemento[campoNombre]) {
+          layer.bindTooltip(elemento[campoNombre], {
+            permanent: true,
+            direction: 'auto',
+            className: 'bg-dark text-white px-2 rounded',
+            opacity: 0.8,
+          });
+        }
       }
     });
     return { capa, limites: limites };

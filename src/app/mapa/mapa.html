@@ -15,11 +15,48 @@
 
     <div class="py-4 max-h-[60vh] overflow-y-auto">
       @if (activeTab === 'menu') {
-        <p-button severity="success" label="menu" />
+        <p-button
+          severity="success"
+          label="Mostrar Departamentos"
+          (click)="mostrarDepartamentos()"
+        />
       }
       @if (activeTab === 'capas_almacenadas') {
         <div class="grid grid-cols-1 gap-2 p-2">
-          <p-button severity="info" label="capas almacenadas" icon="pi pi-folder" />
+          @if (capasGeoJSONAlmacenadas.length === 0) {
+            <div class="text-center text-gray-400 text-sm p-3 border-round border-gray-300">
+              No hay capas almacenadas
+            </div>
+          }
+
+          @for (item of capasGeoJSONAlmacenadas; track item.id) {
+            <div
+              class="flex items-center justify-between p-2 border rounded-2xl border-blue-300 bg-white shadow-1"
+            >
+              <span class="font-medium text-sm flex-1 truncate">
+                {{ item.id }}
+              </span>
+
+              <div class="flex gap-2">
+                <p-button
+                  icon="pi pi-eye"
+                  severity="info"
+                  [rounded]="true"
+                  [outlined]="true"
+                  size="small"
+                />
+
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [rounded]="true"
+                  [outlined]="true"
+                  size="small"
+                  (click)="eliminarCapa(item.id)"
+                />
+              </div>
+            </div>
+          }
         </div>
       }
     </div>

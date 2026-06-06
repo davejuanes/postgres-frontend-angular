@@ -52,7 +52,7 @@ export class Mapa implements AfterViewInit {
   ngAfterViewInit() {
     this.iniciarMapa();
     // this.mostrarDepartamentos();
-    this.mostrarMunicipios(2);
+    // this.mostrarMunicipios(2);
   }
 
   // Iniciar Mapa
@@ -125,20 +125,62 @@ export class Mapa implements AfterViewInit {
     });
   }
 
+  // Para las capas almacenadas
+  capasGeoJSONAlmacenadas: { id: string; capa: L.LayerGroup; visible: boolean }[] = [];
+
   // Para gestionar las capas
   private gestionarCapa(
-    id: String,
+    id: string,
     datos: any[],
     opcionesPunto?: any,
     opcionesPoligono?: any,
+
+    alHacerClick?: (elemento: any) => void,
+    campoNombre?: string,
   ): void {
     const { capa, limites } = this.servicioGeometria.dibujarGeometria(
       datos,
       opcionesPunto,
       opcionesPoligono,
+
+      alHacerClick,
+      campoNombre,
     );
 
     capa.addTo(this.mapa);
+
+    // Se guardan las capas almacenadas
+    this.capasGeoJSONAlmacenadas.push({ id, capa, visible: true });
+
+    console.log(`Capa ${id} agregada`);
+
+    if (limites.isValid()) {
+      this.mapa.fitBounds(limites, { padding: [40, 40] });
+    }
+  }
+
+  // Para eliminar capa almacenada
+  eliminarCapa(id: string) {
+    // Buscamos la capa
+    const indice = this.capasGeoJSONAlmacenadas.findIndex((c) => c.id === id);
+
+    if (indice === -1) {
+      console.warn(`Capa "${id}" no encontrada`);
+
+      // Eliminamos la capa del mapa
+      /* this.mapa.removeLayer(this.capasGeoJSONAlmacenadas[indice].capa);
+
+      // Eliminamos la capa de la lista
+      this.capasGeoJSONAlmacenadas.splice(indice, 1);
+
+      console.log(`Capa ${id} eliminada`); */
+    }
+
+    // Eliminamos la capa
+    this.capasGeoJSONAlmacenadas[indice].capa.remove();
+    this.capasGeoJSONAlmacenadas.splice(indice, 1);
+
+    console.log(`La capa almacenada eliminada "${id}"`);
   }
 
   // Prueba
@@ -149,7 +191,14 @@ export class Mapa implements AfterViewInit {
         tap((resp: any) => {
           // console.log(resp);
 
-          this.gestionarCapa('departamentos', resp, null, { grosor: 1 });
+          this.gestionarCapa(
+            'departamentos',
+            resp,
+            null,
+            { grosor: 1 },
+            (elemento: any) => this.mostrarMunicipios(elemento),
+            'departamento',
+          );
         }),
         catchError((err) => {
           console.log(err);
@@ -159,9 +208,11 @@ export class Mapa implements AfterViewInit {
       .subscribe();
   }
 
-  mostrarMunicipios(cod_depto: number) {
+  mostrarMunicipios(datos: any) {
+    const { cod_dep } = datos;
+
     this.servicioMapa
-      .listarMunicipios(cod_depto)
+      .listarMunicipios(cod_dep)
       .pipe(
         tap((resp: any) => {
           // console.log(resp);
