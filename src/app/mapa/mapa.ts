@@ -7,6 +7,7 @@ import { Footer } from './footer/footer';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabsModule } from 'primeng/tabs';
+import { DialogModule } from 'primeng/dialog';
 
 // Mapa base
 import { BASE_MAPAS_CONFIG } from '../config/tipos_mapa';
@@ -18,7 +19,7 @@ import { GeometriaService } from '../servicios/geometria.service';
 
 @Component({
   selector: 'app-mapa',
-  imports: [Footer, ButtonModule, TooltipModule, TabsModule],
+  imports: [Footer, ButtonModule, TooltipModule, TabsModule, DialogModule],
   templateUrl: './mapa.html',
 })
 export class Mapa implements AfterViewInit {
@@ -53,6 +54,7 @@ export class Mapa implements AfterViewInit {
     this.iniciarMapa();
     // this.mostrarDepartamentos();
     // this.mostrarMunicipios(2);
+    // this.mostrarEntidadesBancarias();
   }
 
   // Iniciar Mapa
@@ -183,6 +185,17 @@ export class Mapa implements AfterViewInit {
     console.log(`La capa almacenada eliminada "${id}"`);
   }
 
+  // Para el estado visible de la capa
+  estadoVisibleCapa(item: { id: string; capa: L.LayerGroup; visible: boolean }) {
+    if (item.visible) {
+      item.capa.remove();
+      item.visible = false;
+    } else {
+      item.capa.addTo(this.mapa);
+      item.visible = true;
+    }
+  }
+
   // Prueba
   mostrarDepartamentos() {
     this.servicioMapa
@@ -217,7 +230,43 @@ export class Mapa implements AfterViewInit {
         tap((resp: any) => {
           // console.log(resp);
 
-          this.gestionarCapa('municipios', resp, null, { grosor: 1 });
+          this.gestionarCapa('municipios', resp, null, { grosor: 1 }, (elemento) =>
+            this.mostrarInformacion(elemento),
+          );
+        }),
+        catchError((err) => {
+          console.log(err);
+          return of([]);
+        }),
+      )
+      .subscribe();
+  }
+
+  visibleMunicipio = signal(false);
+  datosMunicipio = signal<any>([]);
+
+  mostrarInformacion(datos: any) {
+    this.visibleMunicipio.set(true);
+    this.datosMunicipio.set(datos);
+  }
+
+  // Custom Icon
+  iconoBanco = {
+    iconUrl: '/bank.png',
+    iconSize: [20, 20],
+    iconAnchor: [12, 20],
+    popupAnchor: [0, -35],
+  };
+
+  // Mostrar entidades bancarias
+  mostrarEntidadesBancarias() {
+    this.servicioMapa
+      .listarEntidadesBancarias()
+      .pipe(
+        tap((resp: any) => {
+          // console.log(resp);
+
+          this.gestionarCapa('entidades-bancarias', resp, this.iconoBanco);
         }),
         catchError((err) => {
           console.log(err);

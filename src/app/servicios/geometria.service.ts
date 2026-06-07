@@ -48,6 +48,29 @@ export class GeometriaService {
       let layer: L.Layer | undefined;
 
       // Punto
+      if (tipoGeometria === 'Point') {
+        const [longitud, latitud] = coordenadas;
+
+        if (opcionesPunto?.iconUrl) {
+          layer = L.marker([latitud, longitud], {
+            icon: L.icon({
+              iconUrl: opcionesPunto.iconUrl,
+              iconSize: opcionesPunto.iconsize ?? [20, 20],
+              iconAnchor: opcionesPunto.iconAnchor ?? [12, 20],
+              popupAnchor: opcionesPunto.popupAnchor ?? [0, -35],
+            }),
+          });
+        } else {
+          layer = L.circleMarker([latitud, longitud], {
+            radius: 8,
+            color: '#1455C0',
+            fillOpacity: 0.85,
+            weight: 1,
+          });
+        }
+
+        limites.extend([latitud, longitud]);
+      }
 
       // Poligono
 

@@ -20,6 +20,11 @@
           label="Mostrar Departamentos"
           (click)="mostrarDepartamentos()"
         />
+        <p-button
+          severity="success"
+          label="Mostrar Entidades Bancarias"
+          (click)="mostrarEntidadesBancarias()"
+        />
       }
       @if (activeTab === 'capas_almacenadas') {
         <div class="grid grid-cols-1 gap-2 p-2">
@@ -39,11 +44,12 @@
 
               <div class="flex gap-2">
                 <p-button
-                  icon="pi pi-eye"
-                  severity="info"
+                  [icon]="item.visible ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                  [severity]="item.visible ? 'secondary' : 'info'"
                   [rounded]="true"
                   [outlined]="true"
                   size="small"
+                  (click)="estadoVisibleCapa(item)"
                 />
 
                 <p-button
@@ -100,3 +106,19 @@
   <app-footer [latitud_fot]="coordenadas().latitud" [longitud_fot]="coordenadas().longitud">
   </app-footer>
 </div>
+
+<p-dialog
+  header="Header"
+  [(visible)]="visibleMunicipio"
+  [modal]="true"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [style]="{ width: '50vw' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <p>Departamento: {{ datosMunicipio()?.departamento }}</p>
+  <p>Provincia: {{ datosMunicipio()?.provincia }}</p>
+  <p>Municipio: {{ datosMunicipio()?.municipio }}</p>
+  <p>Cod depto: {{ datosMunicipio()?.cod_dep }}</p>
+  <p>Cod de mun: {{ datosMunicipio()?.cod_mun }}</p>
+</p-dialog>

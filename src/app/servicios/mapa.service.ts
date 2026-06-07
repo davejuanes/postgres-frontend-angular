@@ -19,4 +19,9 @@ export class MapaService {
   listarMunicipios(cod_depto: number) {
     return this.http.post(`${this.urlBase}/mapa/listar-municipios`, { cod_depto });
   }
+
+  // Listar entidades bancarias
+  listarEntidadesBancarias() {
+    return this.http.get<any>(`${this.urlBase}/mapa/listar-entidades-bancarias`);
+  }
 }
