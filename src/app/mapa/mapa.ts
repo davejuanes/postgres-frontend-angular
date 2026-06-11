@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, NgZone, signal } from '@angular/core';
+import { AfterViewInit, Component, inject, NgZone, signal, ViewChild } from '@angular/core';
 
 import * as L from 'leaflet';
 import { Footer } from './footer/footer';
@@ -17,9 +17,12 @@ import { MapaService } from '../servicios/mapa.service';
 import { catchError, of, tap } from 'rxjs';
 import { GeometriaService } from '../servicios/geometria.service';
 
+// 8va Clase
+import { WmsWfs } from './modals/wms-wfs/wms-wfs';
+
 @Component({
   selector: 'app-mapa',
-  imports: [Footer, ButtonModule, TooltipModule, TabsModule, DialogModule],
+  imports: [Footer, ButtonModule, TooltipModule, TabsModule, DialogModule, WmsWfs],
   templateUrl: './mapa.html',
 })
 export class Mapa implements AfterViewInit {
@@ -27,7 +30,8 @@ export class Mapa implements AfterViewInit {
   private readonly servicioGeometria = inject(GeometriaService);
 
   // Declaramos la instancia del mapa
-  private mapa!: L.Map;
+  // private mapa!: L.Map;
+  public mapa!: L.Map;
 
   // Selección de mapa
   private mapaBaseActual?: L.TileLayer;
@@ -274,5 +278,12 @@ export class Mapa implements AfterViewInit {
         }),
       )
       .subscribe();
+  }
+
+  // Modal WMS / WFS
+  @ViewChild('wmswfs') wmswfs!: WmsWfs;
+  abrirModalWmsWfs() {
+    // console.log(' abrir modal');
+    this.wmswfs.abrirModal();
   }
 }

@@ -96,6 +96,8 @@
 
   <!-- Para las herramientas -->
   <div class="absolute right-4 bottom-7 z-40 flex flex-col gap-3">
+    <p-button icon="pi pi-map" severity="info" [rounded]="true" (onClick)="abrirModalWmsWfs()" />
+
     <p-button icon="pi pi-plus" severity="info" [rounded]="true" (click)="acercar()" />
 
     <p-button icon="pi pi-minus" severity="info" [rounded]="true" (click)="alejar()" />
@@ -122,3 +124,16 @@
   <p>Cod depto: {{ datosMunicipio()?.cod_dep }}</p>
   <p>Cod de mun: {{ datosMunicipio()?.cod_mun }}</p>
 </p-dialog>
+
+<!-- Modal WMS / WFS -->
+<!-- <p-dialog
+  header="Agregar Capa WMS / WFS"
+  [(visible)]="visibleWmsWfs"
+  [modal]="true"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [style]="{ width: '50vw' }"
+  [draggable]="false"
+  [resizable]="false"
+> -->
+<app-wms-wfs #wmswfs [mapa]="mapa"></app-wms-wfs>
+<!-- </p-dialog>  -->
