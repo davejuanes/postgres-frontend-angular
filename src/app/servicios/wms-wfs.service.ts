@@ -31,7 +31,7 @@ export class WmsWfsService {
   }
 
   getWFS(url: string, layer: string) {
-    const endpoint = `$(url)?service=WFS&version=1.0.0&request=GetFeature&typename=${layer}&outputformat=application/json`;
+    const endpoint = `${url}?service=WFS&version=1.0.0&request=GetFeature&typename=${layer}&outputformat=application/json`;
     return this.http.get(endpoint);
   }
 }

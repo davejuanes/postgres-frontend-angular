@@ -288,4 +288,242 @@ export class Mapa implements AfterViewInit {
     // console.log(' abrir modal');
     this.wmswfs.abrirModal();
   }
+
+  // Métodos de Medición de Distancia (Puntos) y Área
+  private setCursorStyle(cursor: string) {
+    const container = (this.mapa as any)._container as HTMLElement;
+    if (container) {
+      container.style.cursor = cursor;
+    }
+  }
+
+  // Variables para medición de distancia
+  private estadoMedirPunto = false;
+  private clickListenerPunto: any = null;
+  private markersPuntos: L.Marker[] = [];
+  private lineaPuntos: L.Polyline | null = null;
+  public puntos: { latitud: number; longitud: number; }[] = [];
+
+  // Variables para medición de área
+  public estadoMedirArea = false;
+  private latLngsArea: L.LatLng[] = [];
+  private polygonArea: L.Polygon | null = null;
+  private markersArea: L.Marker[] = [];
+  private clickListenerArea: any = null;
+  private dblClickListenerArea: any = null;
+  private tooltipArea: L.Tooltip | null = null;
+
+  // Habilitar / deshabilitar medición de distancias
+  public activarMedicionPunto(): void {
+    if (this.estadoMedirArea) {
+      this.desactivarMedicionArea();
+    }
+
+    if (this.estadoMedirPunto) {
+      this.desactivarMedicionPunto();
+      console.log('Medición de punto deshabilitada');
+    } else {
+      this.estadoMedirPunto = true;
+      this.iniciarMedicionPunto();
+      console.log('Medición de punto habilitada');
+    }
+  }
+
+  private iniciarMedicionPunto(): void {
+    this.setCursorStyle('crosshair');
+    this.clickListenerPunto = (e: L.LeafletMouseEvent) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      let distanciaTramo = 0;
+      let distanciaAcumulada = 0;
+
+      if (this.puntos.length > 0) {
+        const ultimoPunto = this.puntos[this.puntos.length - 1];
+        distanciaTramo = L.latLng(ultimoPunto.latitud, ultimoPunto.longitud).distanceTo(L.latLng(lat, lng));
+        
+        for (let i = 1; i < this.puntos.length; i++) {
+          const p1 = L.latLng(this.puntos[i - 1].latitud, this.puntos[i - 1].longitud);
+          const p2 = L.latLng(this.puntos[i].latitud, this.puntos[i].longitud);
+          distanciaAcumulada += p1.distanceTo(p2);
+        }
+        distanciaAcumulada += distanciaTramo;
+      }
+
+      this.puntos.push({
+        latitud: lat,
+        longitud: lng
+      });
+
+      const distanciaTramoKm = distanciaTramo / 1000;
+      const distanciaAcumuladaKm = distanciaAcumulada / 1000;
+
+      const marker = L.marker([lat, lng])
+        .addTo(this.mapa)
+        .bindPopup(`
+          <b>Punto ${this.puntos.length}</b><br>
+          Lat: ${lat.toFixed(6)}<br>
+          Lng: ${lng.toFixed(6)}<br>
+          Distancia tramo: ${distanciaTramoKm.toFixed(3)} km<br>
+          Distancia acumulada: ${distanciaAcumuladaKm.toFixed(3)} km
+        `);
+      marker.openPopup();
+      this.markersPuntos.push(marker);
+
+      const coordenadas: [number, number][] = this.puntos.map(p => [p.latitud, p.longitud]);
+
+      if (this.lineaPuntos) {
+        this.mapa.removeLayer(this.lineaPuntos);
+      }
+
+      this.lineaPuntos = L.polyline(coordenadas, {
+        color: 'red',
+        weight: 3
+      }).addTo(this.mapa);
+    };
+
+    this.mapa.on('click', this.clickListenerPunto);
+  }
+
+  private desactivarMedicionPunto(): void {
+    if (this.clickListenerPunto) {
+      this.mapa.off('click', this.clickListenerPunto);
+      this.clickListenerPunto = null;
+    }
+
+    this.markersPuntos.forEach(marker => this.mapa.removeLayer(marker));
+    this.markersPuntos = [];
+
+    if (this.lineaPuntos) {
+      this.mapa.removeLayer(this.lineaPuntos);
+      this.lineaPuntos = null;
+    }
+
+    this.puntos = [];
+    this.setCursorStyle('');
+    this.estadoMedirPunto = false;
+  }
+
+  // Habilitar / deshabilitar medición de área
+  public activarMedicionArea(): void {
+    if (this.estadoMedirPunto) {
+      this.desactivarMedicionPunto();
+    }
+
+    if (this.estadoMedirArea) {
+      this.desactivarMedicionArea();
+      console.log('Medición de área deshabilitada');
+    } else {
+      this.estadoMedirArea = true;
+      this.iniciarMedicionArea();
+      console.log('Medición de área habilitada');
+    }
+  }
+
+  private iniciarMedicionArea(): void {
+    this.setCursorStyle('crosshair');
+    this.latLngsArea = [];
+    this.markersArea = [];
+
+    this.clickListenerArea = (e: L.LeafletMouseEvent) => {
+      const point = e.latlng;
+      this.latLngsArea.push(point);
+
+      const marker = L.marker([point.lat, point.lng])
+        .addTo(this.mapa)
+        .bindPopup(`Vértice ${this.latLngsArea.length}`);
+      this.markersArea.push(marker);
+
+      if (this.latLngsArea.length >= 3) {
+        if (this.polygonArea) {
+          this.mapa.removeLayer(this.polygonArea);
+        }
+        this.polygonArea = L.polygon(this.latLngsArea, {
+          color: 'green',
+          fillColor: '#22c55e',
+          fillOpacity: 0.3,
+          weight: 2
+        }).addTo(this.mapa);
+
+        const areaM2 = this.calcularAreaPoligono(this.latLngsArea);
+        const areaText = areaM2 > 1000000 
+          ? `${(areaM2 / 1000000).toFixed(3)} km²` 
+          : `${areaM2.toFixed(2)} m²`;
+
+        if (this.tooltipArea) {
+          this.mapa.removeLayer(this.tooltipArea);
+        }
+
+        const bounds = this.polygonArea.getBounds();
+        this.tooltipArea = L.tooltip({
+          permanent: true,
+          direction: 'center',
+          className: 'area-tooltip'
+        })
+        .setContent(`Área: ${areaText}`)
+        .setLatLng(bounds.getCenter())
+        .addTo(this.mapa);
+      }
+    };
+
+    this.dblClickListenerArea = () => {
+      this.finalizarMedicionArea();
+      console.log('Polígono de área finalizado');
+    };
+
+    this.mapa.on('click', this.clickListenerArea);
+    this.mapa.on('dblclick', this.dblClickListenerArea);
+  }
+
+  private finalizarMedicionArea(): void {
+    if (this.clickListenerArea) {
+      this.mapa.off('click', this.clickListenerArea);
+      this.clickListenerArea = null;
+    }
+    if (this.dblClickListenerArea) {
+      this.mapa.off('dblclick', this.dblClickListenerArea);
+      this.dblClickListenerArea = null;
+    }
+    this.setCursorStyle('');
+  }
+
+  private desactivarMedicionArea(): void {
+    this.finalizarMedicionArea();
+
+    if (this.polygonArea) {
+      this.mapa.removeLayer(this.polygonArea);
+      this.polygonArea = null;
+    }
+
+    if (this.tooltipArea) {
+      this.mapa.removeLayer(this.tooltipArea);
+      this.tooltipArea = null;
+    }
+
+    this.markersArea.forEach(marker => this.mapa.removeLayer(marker));
+    this.markersArea = [];
+    this.latLngsArea = [];
+    this.estadoMedirArea = false;
+  }
+
+  // Fórmula matemática para calcular el área de un polígono geodésico en m²
+  private calcularAreaPoligono(latLngs: L.LatLng[]): number {
+    const radioTierra = 6378137; // en metros
+    let area = 0;
+
+    if (latLngs.length > 2) {
+      for (let i = 0; i < latLngs.length; i++) {
+        const p1 = latLngs[i];
+        const p2 = latLngs[(i + 1) % latLngs.length];
+
+        const lat1 = p1.lat * Math.PI / 180;
+        const lat2 = p2.lat * Math.PI / 180;
+        const lon1 = p1.lng * Math.PI / 180;
+        const lon2 = p2.lng * Math.PI / 180;
+
+        area += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
+      }
+      area = area * radioTierra * radioTierra / 2.0;
+    }
+    return Math.abs(area);
+  }
 }

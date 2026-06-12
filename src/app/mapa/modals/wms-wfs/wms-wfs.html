@@ -70,7 +70,7 @@
                     label="WMS"
                   >
                   </p-button>
-                  <!-- <p-button
+                  <p-button
                     size="small"
                     severity="success"
                     (click)="agregarWfsDesdeLista(layer); $event.stopPropagation()"
@@ -78,116 +78,12 @@
                     tooltipPosition="left"
                     label="WFS"
                   >
-                  </p-button> -->
+                  </p-button>
                 </div>
                 <div class="flex items-center w-full gap-2">
                   <i class="pi pi-map text-blue-500"></i>
                   <span class="flex-1 text-sm">
                     {{ layer.label }}
-                    <!--
-                    <p-dialog
-                      [modal]="false"
-                      [(visible)]="wms_wfs_modal"
-                      [style]="{ width: '25rem' }"
-                      [draggable]="true"
-                      [resizable]="false"
-                      [closable]="false"
-                      [closeOnEscape]="false"
-                      [position]="'topright'"
-                    >
-                      <ng-template pTemplate="header">
-                        <p-tabs [(value)]="tabActivo" class="w-full">
-                          <p-tablist>
-                            <p-tab value="buscar">WMS Y WFS</p-tab>
-                          </p-tablist>
-                          <p-tabpanels>
-                            <p-tabpanel value="buscar">
-                              <p-inputgroup>
-                                <p-floatlabel variant="on">
-                                  <input
-                                    pInputText
-                                    id="busqueda"
-                                    [(ngModel)]="busqueda"
-                                    autocomplete="off"
-                                    class="w-full"
-                                    value="https://geo.gob.bo/geoserver/geonode/wms"
-                                  />
-                                  <label for="busqueda">Agrege la url de wms</label>
-                                </p-floatlabel>
-                                <p-inputgroup-addon>
-                                  <p-button
-                                    icon="pi pi-search"
-                                    severity="help"
-                                    (click)="buscar()"
-                                    [disabled]="progresionbar"
-                                    [loading]="progresionbar"
-                                  />
-                                </p-inputgroup-addon>
-                              </p-inputgroup>
-                              <br />
-                              <div>
-                                <p-select
-                                  *ngIf="resultado().length > 0"
-                                  [options]="resultado()"
-                                  [(ngModel)]="selectedLayer"
-                                  optionLabel="label"
-                                  [filter]="true"
-                                  filterPlaceholder="Buscar capa..."
-                                  placeholder="Seleccionar una capa"
-                                  [virtualScroll]="true"
-                                  [virtualScrollItemSize]="36"
-                                  appendTo="body"
-                                  class="w-full"
-                                >
-                                  <ng-template #selectedItem let-selectedOption>
-                                    <div class="flex items-center gap-2">
-                                      <i class="pi pi-map text-blue-500"></i>
-                                      <span>{{ selectedOption?.label }}</span>
-                                    </div>
-                                  </ng-template>
-                                  <ng-template #item let-layer>
-                                    <div class="flex gap-1">
-                                      <p-button
-                                        size="small"
-                                        severity="info"
-                                        (click)="
-                                          agregarWmsDesdeLista(layer); $event.stopPropagation()
-                                        "
-                                        pTooltip="Agregar WMS"
-                                        tooltipPosition="right"
-                                        label="WMS"
-                                      >
-                                      </p-button>
-                                      <!- - <p-button
-                                        size="small"
-                                        severity="success"
-                                        (click)="
-                                          agregarWfsDesdeLista(layer); $event.stopPropagation()
-                                        "
-                                        pTooltip="Agregar WFS"
-                                        tooltipPosition="left"
-                                        label="WFS"
-                                      >
-                                      </p-button> - ->
-                                    </div>
-                                    <div class="flex items-center w-full gap-2">
-                                      <i class="pi pi-map text-blue-500"></i>
-                                      <span class="flex-1 text-sm">
-                                        {{ layer.label }}
-                                      </span>
-                                    </div>
-                                  </ng-template>
-                                </p-select>
-                              </div>
-                              <div class="card flex justify-center" *ngIf="progresionbar">
-                                <p-progress-spinner ariaLabel="loading" />
-                              </div>
-                            </p-tabpanel>
-                          </p-tabpanels>
-                        </p-tabs>
-                      </ng-template>
-                    </p-dialog>
-                    -->
                   </span>
                 </div>
               </ng-template>

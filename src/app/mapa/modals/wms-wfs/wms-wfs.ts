@@ -73,44 +73,77 @@ export class WmsWfs {
   private wmsLayerActual?: L.TileLayer.WMS;
 
   public agregarWmsDesdeLista(layer: any) {
-    console.log('agregarWmsDesdeLista - Iniciando carga de capa:', layer);
-    console.log('agregarWmsDesdeLista - URL de búsqueda:', this.busqueda);
-    console.log('agregarWmsDesdeLista - Instancia del mapa:', this.mapa);
-
-    if (!layer) {
-      console.warn('agregarWmsDesdeLista - El objeto de la capa es nulo o indefinido.');
+    /* if (!layer) {
       return;
     }
 
     const layerName = layer.value || layer;
     if (!layerName) {
-      console.warn('agregarWmsDesdeLista - No se pudo obtener el nombre de la capa (layer.value).');
       return;
     }
 
     if (!this.mapa) {
-      console.error('agregarWmsDesdeLista - Error: El mapa no está definido o inicializado.');
       return;
-    }
+    } */
 
     if (this.wmsLayerActual) {
-      console.log('agregarWmsDesdeLista - Removiendo capa anterior:', this.wmsLayerActual);
       this.mapa.removeLayer(this.wmsLayerActual);
     }
-    
-    try {
-      console.log('agregarWmsDesdeLista - Creando capa WMS para:', layerName);
-      const wmsLayer = L.tileLayer.wms(this.busqueda, {
-        layers: layerName,
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.1',
-      });
-      wmsLayer.addTo(this.mapa);
-      this.wmsLayerActual = wmsLayer;
-      console.log('agregarWmsDesdeLista - Capa agregada con éxito:', wmsLayer);
-    } catch (error) {
+
+    // try {
+    const wmsLayer = L.tileLayer.wms(this.busqueda, {
+      layers: layer.value,
+      format: 'image/png',
+      transparent: true,
+      version: '1.1.1',
+    });
+    wmsLayer.addTo(this.mapa);
+    this.wmsLayerActual = wmsLayer;
+    /* } catch (error) {
       console.error('agregarWmsDesdeLista - Error al agregar la capa WMS:', error);
-    }
+    } */
+  }
+
+  private wfsLayerActual?: L.GeoJSON;
+  private buscarWFS(layer: string) {
+    this.wmswfsService.getWFS(this.busqueda, layer).subscribe((geojson: any) => {
+      //console.log("GeoJSON:", geojson);
+      // eliminar capa anterior
+      if (this.wfsLayerActual) {
+        this.mapa.removeLayer(this.wfsLayerActual);
+      }
+      const capa = L.geoJSON(geojson, {
+        style: {
+          color: '#ff0000',
+          weight: 2,
+        },
+        pointToLayer: (feature, latlng) => {
+          return L.circleMarker(latlng, {
+            radius: 6,
+            fillColor: '#ff0000',
+            color: '#000',
+            weight: 1,
+            fillOpacity: 0.8,
+          });
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            const contenido = Object.entries(feature.properties)
+              .map(([k, v]) => `<b>${k}</b>: ${v}`)
+              .join('<br>');
+
+            layer.bindPopup(contenido);
+          }
+        },
+      });
+      capa.addTo(this.mapa);
+      this.wfsLayerActual = capa;
+      // zoom a la capa
+      this.mapa.fitBounds(capa.getBounds());
+    });
+  }
+
+  public agregarWfsDesdeLista(layer: any) {
+    this.buscarWFS(layer.value);
   }
 }
