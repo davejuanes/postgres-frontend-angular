@@ -55,10 +55,12 @@ export class Mapa implements AfterViewInit {
   activeTab: string = 'menu';
 
   ngAfterViewInit() {
-    this.iniciarMapa();
-    // this.mostrarDepartamentos();
-    // this.mostrarMunicipios(2);
-    // this.mostrarEntidadesBancarias();
+    setTimeout(() => {
+      this.iniciarMapa();
+      // this.mostrarDepartamentos();
+      // this.mostrarMunicipios(2);
+      // this.mostrarEntidadesBancarias();
+    });
   }
 
   // Iniciar Mapa

@@ -73,16 +73,44 @@ export class WmsWfs {
   private wmsLayerActual?: L.TileLayer.WMS;
 
   public agregarWmsDesdeLista(layer: any) {
+    console.log('agregarWmsDesdeLista - Iniciando carga de capa:', layer);
+    console.log('agregarWmsDesdeLista - URL de búsqueda:', this.busqueda);
+    console.log('agregarWmsDesdeLista - Instancia del mapa:', this.mapa);
+
+    if (!layer) {
+      console.warn('agregarWmsDesdeLista - El objeto de la capa es nulo o indefinido.');
+      return;
+    }
+
+    const layerName = layer.value || layer;
+    if (!layerName) {
+      console.warn('agregarWmsDesdeLista - No se pudo obtener el nombre de la capa (layer.value).');
+      return;
+    }
+
+    if (!this.mapa) {
+      console.error('agregarWmsDesdeLista - Error: El mapa no está definido o inicializado.');
+      return;
+    }
+
     if (this.wmsLayerActual) {
+      console.log('agregarWmsDesdeLista - Removiendo capa anterior:', this.wmsLayerActual);
       this.mapa.removeLayer(this.wmsLayerActual);
     }
-    const wmsLayer = L.tileLayer.wms(this.busqueda, {
-      layers: layer.value,
-      format: 'image/png',
-      transparent: true,
-      version: '1.1.1',
-    });
-    wmsLayer.addTo(this.mapa);
-    this.wmsLayerActual = wmsLayer;
+    
+    try {
+      console.log('agregarWmsDesdeLista - Creando capa WMS para:', layerName);
+      const wmsLayer = L.tileLayer.wms(this.busqueda, {
+        layers: layerName,
+        format: 'image/png',
+        transparent: true,
+        version: '1.1.1',
+      });
+      wmsLayer.addTo(this.mapa);
+      this.wmsLayerActual = wmsLayer;
+      console.log('agregarWmsDesdeLista - Capa agregada con éxito:', wmsLayer);
+    } catch (error) {
+      console.error('agregarWmsDesdeLista - Error al agregar la capa WMS:', error);
+    }
   }
 }
