@@ -4,3 +4,10 @@
 // @use '@/assets/layout/layout.scss';
 @use './assets/layout/layout.scss';
 // @use '@/assets/demo/demo.scss';
+
+.area-tooltip {
+  background: white;
+  border: 1px solid #22c55e;
+  font-weight: bold;
+  color: #15803d;
+}

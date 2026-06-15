@@ -73,24 +73,12 @@ export class WmsWfs {
   private wmsLayerActual?: L.TileLayer.WMS;
 
   public agregarWmsDesdeLista(layer: any) {
-    /* if (!layer) {
-      return;
-    }
 
-    const layerName = layer.value || layer;
-    if (!layerName) {
-      return;
-    }
-
-    if (!this.mapa) {
-      return;
-    } */
 
     if (this.wmsLayerActual) {
       this.mapa.removeLayer(this.wmsLayerActual);
     }
 
-    // try {
     const wmsLayer = L.tileLayer.wms(this.busqueda, {
       layers: layer.value,
       format: 'image/png',
@@ -99,9 +87,6 @@ export class WmsWfs {
     });
     wmsLayer.addTo(this.mapa);
     this.wmsLayerActual = wmsLayer;
-    /* } catch (error) {
-      console.error('agregarWmsDesdeLista - Error al agregar la capa WMS:', error);
-    } */
   }
 
   private wfsLayerActual?: L.GeoJSON;
@@ -138,7 +123,6 @@ export class WmsWfs {
       });
       capa.addTo(this.mapa);
       this.wfsLayerActual = capa;
-      // zoom a la capa
       this.mapa.fitBounds(capa.getBounds());
     });
   }

@@ -65,6 +65,17 @@ export class Mapa implements AfterViewInit {
 
   // Iniciar Mapa
   iniciarMapa() {
+    const iconDefault = L.icon({
+      iconUrl: 'marker-icon.png',
+      iconRetinaUrl: 'marker-icon-2x.png',
+      shadowUrl: 'marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+
     this.mapa = L.map('mapa_v2', {
       center: [-16.49388, -68.092698],
       zoom: 6,
@@ -298,11 +309,11 @@ export class Mapa implements AfterViewInit {
   }
 
   // Variables para medición de distancia
-  private estadoMedirPunto = false;
+  public estadoMedirPunto = false;
   private clickListenerPunto: any = null;
   private markersPuntos: L.Marker[] = [];
   private lineaPuntos: L.Polyline | null = null;
-  public puntos: { latitud: number; longitud: number; }[] = [];
+  public puntos: { latitud: number; longitud: number }[] = [];
 
   // Variables para medición de área
   public estadoMedirArea = false;
@@ -339,8 +350,10 @@ export class Mapa implements AfterViewInit {
 
       if (this.puntos.length > 0) {
         const ultimoPunto = this.puntos[this.puntos.length - 1];
-        distanciaTramo = L.latLng(ultimoPunto.latitud, ultimoPunto.longitud).distanceTo(L.latLng(lat, lng));
-        
+        distanciaTramo = L.latLng(ultimoPunto.latitud, ultimoPunto.longitud).distanceTo(
+          L.latLng(lat, lng),
+        );
+
         for (let i = 1; i < this.puntos.length; i++) {
           const p1 = L.latLng(this.puntos[i - 1].latitud, this.puntos[i - 1].longitud);
           const p2 = L.latLng(this.puntos[i].latitud, this.puntos[i].longitud);
@@ -351,15 +364,13 @@ export class Mapa implements AfterViewInit {
 
       this.puntos.push({
         latitud: lat,
-        longitud: lng
+        longitud: lng,
       });
 
       const distanciaTramoKm = distanciaTramo / 1000;
       const distanciaAcumuladaKm = distanciaAcumulada / 1000;
 
-      const marker = L.marker([lat, lng])
-        .addTo(this.mapa)
-        .bindPopup(`
+      const marker = L.marker([lat, lng]).addTo(this.mapa).bindPopup(`
           <b>Punto ${this.puntos.length}</b><br>
           Lat: ${lat.toFixed(6)}<br>
           Lng: ${lng.toFixed(6)}<br>
@@ -369,7 +380,7 @@ export class Mapa implements AfterViewInit {
       marker.openPopup();
       this.markersPuntos.push(marker);
 
-      const coordenadas: [number, number][] = this.puntos.map(p => [p.latitud, p.longitud]);
+      const coordenadas: [number, number][] = this.puntos.map((p) => [p.latitud, p.longitud]);
 
       if (this.lineaPuntos) {
         this.mapa.removeLayer(this.lineaPuntos);
@@ -377,7 +388,7 @@ export class Mapa implements AfterViewInit {
 
       this.lineaPuntos = L.polyline(coordenadas, {
         color: 'red',
-        weight: 3
+        weight: 3,
       }).addTo(this.mapa);
     };
 
@@ -390,7 +401,7 @@ export class Mapa implements AfterViewInit {
       this.clickListenerPunto = null;
     }
 
-    this.markersPuntos.forEach(marker => this.mapa.removeLayer(marker));
+    this.markersPuntos.forEach((marker) => this.mapa.removeLayer(marker));
     this.markersPuntos = [];
 
     if (this.lineaPuntos) {
@@ -441,13 +452,12 @@ export class Mapa implements AfterViewInit {
           color: 'green',
           fillColor: '#22c55e',
           fillOpacity: 0.3,
-          weight: 2
+          weight: 2,
         }).addTo(this.mapa);
 
         const areaM2 = this.calcularAreaPoligono(this.latLngsArea);
-        const areaText = areaM2 > 1000000 
-          ? `${(areaM2 / 1000000).toFixed(3)} km²` 
-          : `${areaM2.toFixed(2)} m²`;
+        const areaText =
+          areaM2 > 1000000 ? `${(areaM2 / 1000000).toFixed(3)} km²` : `${areaM2.toFixed(2)} m²`;
 
         if (this.tooltipArea) {
           this.mapa.removeLayer(this.tooltipArea);
@@ -457,11 +467,11 @@ export class Mapa implements AfterViewInit {
         this.tooltipArea = L.tooltip({
           permanent: true,
           direction: 'center',
-          className: 'area-tooltip'
+          className: 'area-tooltip',
         })
-        .setContent(`Área: ${areaText}`)
-        .setLatLng(bounds.getCenter())
-        .addTo(this.mapa);
+          .setContent(`Área: ${areaText}`)
+          .setLatLng(bounds.getCenter())
+          .addTo(this.mapa);
       }
     };
 
@@ -499,10 +509,16 @@ export class Mapa implements AfterViewInit {
       this.tooltipArea = null;
     }
 
-    this.markersArea.forEach(marker => this.mapa.removeLayer(marker));
+    this.markersArea.forEach((marker) => this.mapa.removeLayer(marker));
     this.markersArea = [];
     this.latLngsArea = [];
     this.estadoMedirArea = false;
+  }
+
+  public limpiarMediciones(): void {
+    this.desactivarMedicionPunto();
+    this.desactivarMedicionArea();
+    console.log('Mediciones limpiadas');
   }
 
   // Fórmula matemática para calcular el área de un polígono geodésico en m²
@@ -515,14 +531,14 @@ export class Mapa implements AfterViewInit {
         const p1 = latLngs[i];
         const p2 = latLngs[(i + 1) % latLngs.length];
 
-        const lat1 = p1.lat * Math.PI / 180;
-        const lat2 = p2.lat * Math.PI / 180;
-        const lon1 = p1.lng * Math.PI / 180;
-        const lon2 = p2.lng * Math.PI / 180;
+        const lat1 = (p1.lat * Math.PI) / 180;
+        const lat2 = (p2.lat * Math.PI) / 180;
+        const lon1 = (p1.lng * Math.PI) / 180;
+        const lon2 = (p2.lng * Math.PI) / 180;
 
         area += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
       }
-      area = area * radioTierra * radioTierra / 2.0;
+      area = (area * radioTierra * radioTierra) / 2.0;
     }
     return Math.abs(area);
   }
